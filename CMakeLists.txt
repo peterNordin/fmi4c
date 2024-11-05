@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.15)
 project(fmi4c C)
 set(CMAKE_C_STANDARD 99)
 
-set(target_name fmi4c)
-
 option(FMI4C_BUILD_DOCUMENTATION "Build Doxygen documentation" OFF)
 option(FMI4C_BUILD_TEST "Build test executable" OFF)
 option(FMI4C_BUILD_SHARED "Build as shared library (DLL)" ON)
@@ -66,23 +64,23 @@ if (MSVC)
 endif()
 
 if (FMI4C_BUILD_SHARED)
-    add_library(${target_name} SHARED ${SRCFILES})
+    add_library(fmi4c SHARED ${SRCFILES})
 else()
-    add_library(${target_name} STATIC ${SRCFILES})
+    add_library(fmi4c STATIC ${SRCFILES})
 endif()
 
-target_compile_definitions(${target_name} PUBLIC HAVE_MEMMOVE=1 EZXML_NOMMAP USE_FILE32API)
+target_compile_definitions(fmi4c PUBLIC HAVE_MEMMOVE=1 EZXML_NOMMAP USE_FILE32API)
 if (FMI4C_BUILD_SHARED)
     # Only set DLLEXPORT when producing the library, when consumed dllimport will be assumed
-    target_compile_definitions(${target_name} PRIVATE FMI4C_DLLEXPORT)
+    target_compile_definitions(fmi4c PRIVATE FMI4C_DLLEXPORT)
 else()
     # When using as a static library (on windows) FMI4C_STATIC must be defined, otherwise dllimport will be assumed
-    target_compile_definitions(${target_name} PUBLIC FMI4C_STATIC)
+    target_compile_definitions(fmi4c PUBLIC FMI4C_STATIC)
     # Must use position independent code if intend to include static fmi4c lib into shared (dll) consumer
-    set_target_properties(${target_name} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    set_target_properties(fmi4c PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 
-target_include_directories(${target_name}
+target_include_directories(fmi4c
         PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/3rdparty>"
@@ -92,7 +90,7 @@ target_include_directories(${target_name}
 )
 
 # Internal dependecy (PRIVATE) on zlib and ${CMAKE_DL_LIBS}) for libdl on Linux
-target_link_libraries(${target_name} PRIVATE ZLIB::ZLIB ${CMAKE_DL_LIBS})
+target_link_libraries(fmi4c PRIVATE ZLIB::ZLIB ${CMAKE_DL_LIBS})
 
 if (${FMI4C_BUILD_TEST})
     enable_testing()
@@ -106,26 +104,26 @@ endif()
 
 
 configure_package_config_file(cmake/config.cmake.in
-        "${CMAKE_CURRENT_BINARY_DIR}/${target_name}-config.cmake"
-        INSTALL_DESTINATION "${CMAKE_INSTALL_DATADIR}/${target_name}"
+        "${CMAKE_CURRENT_BINARY_DIR}/fmi4c-config.cmake"
+        INSTALL_DESTINATION "${CMAKE_INSTALL_DATADIR}/fmi4c"
         NO_SET_AND_CHECK_MACRO)
 
 install(
         FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/${target_name}-config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/fmi4c-config.cmake"
         DESTINATION
-        "${CMAKE_INSTALL_DATADIR}/${target_name}")
+        "${CMAKE_INSTALL_DATADIR}/fmi4c")
 
 
-install(TARGETS "${target_name}" EXPORT "${target_name}-targets")
+install(TARGETS fmi4c EXPORT "fmi4c-targets")
 install(DIRECTORY "include/" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 install(DIRECTORY "3rdparty/fmi" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 # If building a static library, also include the local static zlib if it was built
 if (NOT FMI4C_BUILD_SHARED AND TARGET zlibstatic)
-    install(TARGETS zlibstatic EXPORT "${target_name}-targets")
+    install(TARGETS zlibstatic EXPORT "fmi4c-targets")
 endif()
 
-install(EXPORT "${target_name}-targets"
-        NAMESPACE "${target_name}::"
-        DESTINATION "${CMAKE_INSTALL_DATADIR}/${target_name}")
+install(EXPORT "fmi4c-targets"
+        NAMESPACE "fmi4c::"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/fmi4c")
