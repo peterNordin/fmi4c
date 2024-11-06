@@ -7,6 +7,11 @@ option(FMI4C_BUILD_TEST "Build test executable" OFF)
 option(FMI4C_BUILD_SHARED "Build as shared library (DLL)" ON)
 option(FMI4C_USE_INCLUDED_ZLIB "Use the included zlib (statically linked) even if a system version is available" OFF)
 
+# Set default debug postfix
+if (NOT CMAKE_DEBUG_POSTFIX)
+    set(CMAKE_DEBUG_POSTFIX d)
+endif()
+
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
